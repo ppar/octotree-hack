@@ -186,8 +186,10 @@ var Adapter = function () {
                   if (node) item.children = true;else folders[item.path] = item.children = [];
                 }
 
-                // if item is part of a PR, jump to that file's diff
                 if (item.patch && typeof item.patch.diffId === 'number') {
+                  // Item is part of a PR
+                  jQuery('#files .file').hide(); // Hide all diffs, let user select one in the tree
+
                   var url = _this._getPatchHref(repo, item.patch);
                   item.a_attr = {
                     href: url,
@@ -570,6 +572,51 @@ var PjaxAdapter = function (_Adapter) {
     value: function selectFile(path, opts) {
       opts = opts || {};
       var $pjaxContainer = opts.$pjaxContainer;
+
+      var diffSelector = path.match('#diff-.*');
+      if (diffSelector !== null) {
+        // We're opening a diff on the same page
+        diffSelector = diffSelector[0];
+
+        // Show only this file's diff
+        jQuery('#files .file').hide();
+        jQuery(diffSelector).show();
+        jQuery(diffSelector).css('display', '');
+
+        // Expand all the "folded" parts of the diff
+        var loadSnippets = function() {
+          var loadCount = 0;
+          jQuery(diffSelector + ' a.diff-expander').each(function(index, el){
+            // This runs the plain DOM click event, GitHub doesn't do jQuery
+            this.click();
+            loadCount++;
+          });
+
+          if (loadCount > 0){
+            // Returned snippet contained more folded parts, recurse
+            // FIXME: this should _really_ be done when the XHR launched by the .click() event completes
+            setTimeout(loadSnippets, 1000);
+
+          } else {
+            // Remove loading text
+            var span = document.getElementById("octohack-loading-text");
+            span.parentNode.removeChild(span);
+          }
+        };
+
+        // Show loading text
+        jQuery(diffSelector + ' div.file-info').each(function(index, el){
+            var span = document.createElement("span")
+            span.appendChild(document.createTextNode(" * * * * Loading diff ... * * * * "));
+            span.id = "octohack-loading-text";
+            this.appendChild(span);
+        });
+
+        // Load snippets
+        loadSnippets();
+
+        return;
+      }
 
       // if we're on the same page and just navigating to a different anchor
       // don't bother fetching the page with pjax
