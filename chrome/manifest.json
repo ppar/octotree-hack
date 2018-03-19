@@ -1,10 +1,10 @@
 {
-  "name": "Octotree",
+  "name": "Octotree-ppar-hack",
   "version": "2.4.6",
   "manifest_version": 2,
-  "author": "Buu Nguyen",
-  "description": "Code tree for GitHub",
-  "homepage_url": "https://github.com/buunguyen/octotree",
+  "author": "Peter Parkkali",
+  "description": "Quick hack of buunguyen's octotree with a single file PR view",
+  "homepage_url": "https://github.com/ppar/octotree-hack",
   "icons": {
     "128": "icons/icon128.png"
   },
